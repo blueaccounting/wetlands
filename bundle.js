@@ -60798,7 +60798,7 @@ function initRoutes(ractive, points) {
 
   function assess() {
     IMDS.app.set('appstate.activeTab', 'button-assess');
-    graph.summarizeByYear(IMDS.app, 'inputData.imdsprojects.markers.inBounds', 'derivedData', 'endyear', ['acres_of_coastal_wetlands_protected', 'acres_of_coastal_wetlands_restored', 'acres_of_coastal_wetlands_enhanced']);
+    graph.summarizeByYear(IMDS.app, 'inputData.imdsprojects.markers.inBounds', 'derivedData', 'endyear', ['acres_of_coastal_wetlands_protected', 'acres_of_coastal_wetlands_restored', 'acres_of_coastal_wetlands_enhanced', 'funding_i']);
     graph.summarizeWetlands(IMDS.app, 'inputData.wetlandpts.markers.inBounds', 'derivedData', 'score_valu', 'gis_acres');
   };
 
@@ -60870,7 +60870,7 @@ function onMapMove(map, ractive, markerLayerGroup, wetlandLayerGroup) {
     });
 
     if (ractive.get('appstate.activeTab') === 'button-assess') {
-      graph.summarizeByYear(IMDS.app, 'inputData.imdsprojects.markers.inBounds', 'derivedData', 'endyear', ['acres_of_coastal_wetlands_protected', 'acres_of_coastal_wetlands_restored', 'acres_of_coastal_wetlands_enhanced']);
+      graph.summarizeByYear(IMDS.app, 'inputData.imdsprojects.markers.inBounds', 'derivedData', 'endyear', ['acres_of_coastal_wetlands_protected', 'acres_of_coastal_wetlands_restored', 'acres_of_coastal_wetlands_enhanced', 'funding_i']);
       graph.summarizeWetlands(IMDS.app, 'inputData.wetlandpts.markers.inBounds', 'derivedData', 'score_valu', 'gis_acres');
     };
 
@@ -60999,7 +60999,7 @@ function changeSection (ractive) {
     //set URL w/ page.
 
     if (buttonid === 'button-assess') {
-      graph.summarizeByYear(IMDS.app, 'inputData.imdsprojects.markers.inBounds', 'derivedData', 'endyear', ['acres_of_coastal_wetlands_protected', 'acres_of_coastal_wetlands_restored', 'acres_of_coastal_wetlands_enhanced']);
+      graph.summarizeByYear(IMDS.app, 'inputData.imdsprojects.markers.inBounds', 'derivedData', 'endyear', ['acres_of_coastal_wetlands_protected', 'acres_of_coastal_wetlands_restored', 'acres_of_coastal_wetlands_enhanced', 'funding_i']);
     }   
 
   });    
@@ -61008,7 +61008,7 @@ function changeSection (ractive) {
 
 function changeGraph (ractive) {
   ractive.on( 'graph-change', function ( event ) {
-    graph.summarizeByYear(IMDS.app, 'inputData.imdsprojects.markers.inBounds', 'derivedData', 'endyear', ['acres_of_coastal_wetlands_protected', 'acres_of_coastal_wetlands_restored', 'acres_of_coastal_wetlands_enhanced']);  
+    graph.summarizeByYear(IMDS.app, 'inputData.imdsprojects.markers.inBounds', 'derivedData', 'endyear', ['acres_of_coastal_wetlands_protected', 'acres_of_coastal_wetlands_restored', 'acres_of_coastal_wetlands_enhanced', 'funding_i']);  
   });    
 };
 
@@ -61628,15 +61628,17 @@ function summarizeByYear (ractive, inKeyPath, outKeyPath, yearField, sumFields) 
       var restoredSum = _.sumBy(yearArray, 'acres_of_coastal_wetlands_restored');
       var enhancedSum = _.sumBy(yearArray, 'acres_of_coastal_wetlands_enhanced');
       var totalSum = protectedSum + restoredSum + enhancedSum;
+	  var fundingSum = _.sumBy(yearArray, 'funding_i');
+	  var fundingAvg = fundingSum / yearArray.length;
 
 
-      if (totalSum > 0 ) {
+      /*if (totalSum > 0 ) {*/
         if (key === 'undefined') {
-          yearSummary.push({'year': 'N/A', 'projects': yearArray.length,'protectedSum': _.round(protectedSum, 1), 'restoredSum': _.round(restoredSum, 1), 'enhancedSum': _.round(enhancedSum, 1),'totalSum': _.round(totalSum, 1)});  
+          yearSummary.push({'year': 'N/A', 'projects': yearArray.length,'protectedSum': _.round(protectedSum, 1), 'restoredSum': _.round(restoredSum, 1), 'enhancedSum': _.round(enhancedSum, 1),'totalSum': _.round(totalSum, 1), 'fundingSum': fundingSum, 'fundingAvg': fundingAvg});  
         } else {
-          yearSummary.push({'year': key, 'projects': yearArray.length,'protectedSum': _.round(protectedSum, 1), 'restoredSum': _.round(restoredSum, 1), 'enhancedSum': _.round(enhancedSum, 1),'totalSum': _.round(totalSum, 1)});           
+          yearSummary.push({'year': key, 'projects': yearArray.length,'protectedSum': _.round(protectedSum, 1), 'restoredSum': _.round(restoredSum, 1), 'enhancedSum': _.round(enhancedSum, 1),'totalSum': _.round(totalSum, 1), 'fundingSum': fundingSum, 'fundingAvg': fundingAvg});           
         }
-      };
+      /*};*/
     }
 
     sortByYear = _.sortBy(yearSummary, 'year');
@@ -61667,6 +61669,11 @@ function summarizeByYear (ractive, inKeyPath, outKeyPath, yearField, sumFields) 
       d.enhancedCumul = enhancedSum + d.enhancedSum;
       return enhancedSum + d.enhancedSum;
     }, 0);
+	
+	var fundingCumul = sortByYear.reduce(function(fundingSum, d) {
+		d.fundingCumul = fundingSum + d.fundingSum;
+		return fundingSum + d.fundingSum;
+	}, 0);
 
     //ractive.set(outKeyPath+'.overallSummary', _.sortBy(yearSummary, 'year'));
     ractive.set(outKeyPath+'.overallSummary', yearSummary);     
@@ -61714,6 +61721,7 @@ function summarizeByYear (ractive, inKeyPath, outKeyPath, yearField, sumFields) 
   var protected = ractive.get('derivedData.acres_of_coastal_wetlands_protected');
   var restoredData = ractive.get('derivedData.acres_of_coastal_wetlands_restored');
   var enhancedData = ractive.get('derivedData.acres_of_coastal_wetlands_enhanced');
+  var fundingData = ractive.get('derivedData.funding_i');
   var overallData = ractive.get('derivedData.overallSummary');  
 
   // Now loop through and tally up each metric by year
@@ -61726,11 +61734,13 @@ function summarizeByYear (ractive, inKeyPath, outKeyPath, yearField, sumFields) 
   var prot = _(overallData).map('protectedSum').dropRight(1).value();
   var enha = _(overallData).map('enhancedSum').dropRight(1).value();
   var rest = _(overallData).map('restoredSum').dropRight(1).value();
+  var fund = _(overallData).map('fundingSum').dropRight(1).value();
 
   var yearLine = _(overallData).map('year').dropRight(1).value();
   var protCumul = _(overallData).map('protectedCumul').dropRight(1).value();
   var enhaCumul = _(overallData).map('enhancedCumul').dropRight(1).value();
   var restCumul = _(overallData).map('restoredCumul').dropRight(1).value();
+  var fundCumul = _(overallData).map('fundingCumul').dropRight(1).value();
 
   // Miles per year bar chart
 
@@ -61787,7 +61797,45 @@ function summarizeByYear (ractive, inKeyPath, outKeyPath, yearField, sumFields) 
         return index % 2 === 0 ? value : null;
       }
     } 
-  }); 
+  });
+  
+  new Chartist.Bar('#graph-funding-peryear', {
+     labels: yearLine,
+     series: [fund]
+   }, {
+     fullWidth: true,
+	 height: '300px',
+     chartPadding: {
+       right: 10,
+       left: 30
+     },
+     axisX: {
+       labelInterpolationFnc: function(value, index) {
+         return index % 2 === 0 ? value : null;
+       }
+     }
+   });        
+
+
+   // Cumulative miles line graph
+   new Chartist.Line('#graph-funding-cumul', {
+     labels: yearLine,
+     series: [fundCumul]
+     },
+     {
+     fullWidth: true,
+	 height: '300px',
+     chartPadding: {
+       right: 30,
+       left: 30
+     },
+     axisX: {
+       labelInterpolationFnc: function(value, index) {
+         //console.log('series', this);
+         return index % 1 === 0 ? value : null;
+       }
+     } 
+   });
 
 
 
@@ -61864,42 +61912,44 @@ function summarizeByYear (ractive, inKeyPath, outKeyPath, yearField, sumFields) 
   //   } 
   // }); 
 
-  // // Funding per year bar chart
-  // new Chartist.Bar('#graph-funding-peryear', {
-  //   labels: _.map(restoredData, 'year'),
-  //   series: [_.map(restoredData, 'sum')]
-  // }, {
-  //   fullWidth: true,
-  //   chartPadding: {
-  //     right: 10,
-  //     left: 30
-  //   },
-  //   axisX: {
-  //     labelInterpolationFnc: function(value, index) {
-  //       return index % 1 === 0 ? value : null;
-  //     }
-  //   }
-  // });        
+   // Funding per year bar chart
+   /*new Chartist.Bar('#graph-funding-peryear', {
+     labels: _.map(fundingData, 'year'),
+     series: [_.map(fundingData, 'sum')]
+   }, {
+     fullWidth: true,
+	 height: '300px',
+     chartPadding: {
+       right: 10,
+       left: 30
+     },
+     axisX: {
+       labelInterpolationFnc: function(value, index) {
+         return index % 2 === 0 ? value : null;
+       }
+     }
+   });        
 
 
-  // // Cumulative miles line graph
-  // new Chartist.Line('#graph-funding-cumul', {
-  //   labels: _.map(restoredData, 'year'),
-  //   series: [_.map(restoredData, 'cumul')]
-  //   },
-  //   {
-  //   fullWidth: true,
-  //   chartPadding: {
-  //     right: 30,
-  //     left: 30
-  //   },
-  //   axisX: {
-  //     labelInterpolationFnc: function(value, index) {
-  //       //console.log('series', this);
-  //       return index % 1 === 0 ? value : null;
-  //     }
-  //   } 
-  // }); 
+   // Cumulative miles line graph
+   new Chartist.Line('#graph-funding-cumul', {
+     labels: _.map(fundingData, 'year'),
+     series: [_.map(fundingData, 'cumul')]
+     },
+     {
+     fullWidth: true,
+	 height: '300px',
+     chartPadding: {
+       right: 30,
+       left: 30
+     },
+     axisX: {
+       labelInterpolationFnc: function(value, index) {
+         //console.log('series', this);
+         return index % 1 === 0 ? value : null;
+       }
+     } 
+   });*/ 
 
 };  
 
@@ -61974,7 +62024,9 @@ function summarizeWetlands (ractive, inKeyPath, outKeyPath, ibiScoreField, acres
         return index % 1 === 0 ? value : null;
       }
     }
-  }); 
+  });
+
+  
 
   // Cumulative miles line graph
   // new Chartist.Line('#graph-reconnected-cumul', {
