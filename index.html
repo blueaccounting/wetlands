@@ -345,7 +345,62 @@
             </tbody>
           </table>
         </div>
-    </div>     
+    </div>
+	
+	<div class="project-card summary-card">
+      <h3>Funding per Year</h3>
+          <div class="graph-meta">
+            <ul class="list-inline" role="tablist">
+              <li><strong>Show: </strong></li>
+              <li class="active"><a href="#graph-funding-peryear-tab" role="tab" data-toggle="tab" on-click='graph-change' >Per Year</a></li>
+              <li><a href="#graph-funding-cumul-tab" role="tab" data-toggle="tab" on-click='graph-change' >Cumulative</a></li>
+              <li class="pull-right">Total: ${{sumBy(derivedData.overallSummary, 'fundingSum')}}</li>
+            </ul>
+          </div>
+
+
+        <div class="tab-content">
+          <div role="tabpanel" id="graph-funding-peryear-tab" class="tab-pane graph-tab active">            
+            <h4>Funding per Year</h4>
+            <div id="graph-funding-peryear" class="chart  ct-major-twelfth"></div>
+          </div>
+
+          <div role="tabpanel" id="graph-funding-cumul-tab" class="tab-pane graph-tab">            
+            <h4>Cumulative Funding</h4>
+            <div id="graph-funding-cumul" class="chart  ct-major-twelfth"></div>
+          </div>
+        </div>
+
+        <a class="btn btn-xs btn-default btn-table" role="button" data-toggle="collapse" href="#funding-table">
+          <i class="fa fa-table" aria-hidden="true"></i> Show table</a>
+        <div id="funding-table" class="table-responsive collapse">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Funding</th>
+                <th>Cumulative</th>
+                <th>Projects</th>
+                <th>Avg</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#derivedData.overallSummary:i}}
+                <tr>
+                  <td>{{year}}</td>
+                  <td>{{formatNumber(fundingSum, '$0,0')}}</td>
+                  <td>{{formatNumber(fundingCumul, '$0,0')}}</td>
+                  <td>{{projects}}</td>
+                  <td>{{formatNumber(fundingAvg, '$0,0')}}</td>
+                </tr>
+              {{/derivedData.overallSummary}}
+            </tbody>
+          </table>
+        </div>
+
+    </div>
+
+	
 
 
   {{/if}}
